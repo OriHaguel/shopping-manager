@@ -1,0 +1,10 @@
+@function rem($size, $base: 16px) {
+    $remSize: $size / $base; // This works because both are in pixels
+    @return #{$remSize}rem; // Return the value in rem
+}
+
+
+// EM Functions
+@function em($pixels, $context: 16px) {
+    @return calc(($pixels/$context) * 1em);
+}
