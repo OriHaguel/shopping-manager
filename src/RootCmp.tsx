@@ -8,9 +8,8 @@ export function RootCmp() {
             {/* <AppHeader /> */}
             <main>
                 <Routes>
-                    <Route path='/' element={<CategoryManagementPage />
-                    } />
-                    {/* <Route path='/' element={<Homepage />} /> */}
+                    {/* <Route path='/' element={<CategoryManagementPage />} /> */}
+                    <Route path='/' element={<Homepage />} />
                 </Routes>
             </main>
         </div>

@@ -20,10 +20,14 @@ import {
     Users,
     ArrowRight,
 } from "lucide-react";
+import { saveList, getLists, getAList } from '@/services/item.service';
 
 const HomePage = () => {
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+    // saveList({ name: 'hello', categories: [], ownerId: '1', _id: 'X4Oyz' })
+    // console.log(getLists().filter(list => list.name === 'list11sdfdsfsf11111111'))
 
+    console.log(getAList())
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
             {/* Header with glass effect */}

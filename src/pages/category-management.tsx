@@ -1,16 +1,6 @@
 import React, { useState } from 'react';
 import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp } from 'lucide-react';
-
-export interface Item {
-  name: string;
-  favorite: boolean;
-  checked: boolean;
-}
-
-export interface Category {
-  name: string;
-  items: Item[];
-}
+import { Category, Items } from '../dtos/category'
 
 interface OpenCategories {
   [key: number]: boolean;
@@ -18,6 +8,7 @@ interface OpenCategories {
 
 const CategoryManagementPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  console.log("🚀 ~ categories:", categories)
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>('');
   const [newItemName, setNewItemName] = useState<string>('');
@@ -36,7 +27,7 @@ const CategoryManagementPage: React.FC = () => {
   const handleAddItem = (categoryIndex: number): void => {
     if (newItemName.trim()) {
       const updatedCategories = [...categories];
-      const newItem: Item = {
+      const newItem: Items = {
         name: newItemName,
         favorite: false,
         checked: false
@@ -77,7 +68,7 @@ const CategoryManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-2 pt-10">
       <div className="max-w-4xl mx-auto">
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold mb-6 text-gray-800">Category Management</h1>
