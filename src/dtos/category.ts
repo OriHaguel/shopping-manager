@@ -1,11 +1,11 @@
 export interface Category {
-    _id?: string;
+    _id: string;
     name: string;
     items: Items[];
-    // listId: string;
+    listId: string;
 }
 export interface Items {
-    _id?: string;
+    _id: string;
     name: string;
     favorite: boolean;
     checked: boolean;

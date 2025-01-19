@@ -1,28 +1,27 @@
 import { useState } from 'react';
 import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Category, Items } from '../dtos/category'
+import { useParams } from 'react-router-dom';
+import { getCategories, saveCategory, saveItem } from '@/services/category.service';
 
 interface OpenCategories {
   [key: number]: boolean;
 }
 
 const CategoryManagementPage: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  console.log("🚀 ~ categories:", categories)
+  const [categories, setCategories] = useState<Category[]>(getCategories());
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>('');
   const [newItemName, setNewItemName] = useState<string>('');
   const [openCategories, setOpenCategories] = useState<OpenCategories>({});
+  const { id } = useParams()
 
-  function handleInput(ev: any) {
-    console.log("🚀 ~ handleInput ~ ev:", ev.target)
-
-  }
 
   const handleAddCategory = (): void => {
     if (newCategoryName.trim()) {
       const newCategoryIndex = categories.length;
-      setCategories([...categories, { name: newCategoryName, items: [] }]);
+      saveCategory({ name: newCategoryName, items: [], listId: id!, _id: '' })
+      setCategories([...categories, { name: newCategoryName, items: [], listId: id!, _id: '' }]);
       setOpenCategories(prev => ({ ...prev, [newCategoryIndex]: true }));
       setNewCategoryName('');
       setShowCategoryInput(false);
@@ -30,6 +29,7 @@ const CategoryManagementPage: React.FC = () => {
   };
 
   const handleAddItem = (categoryIndex: number): void => {
+    console.log("🚀 ~ handleAddItem ~ categoryIndex:", categoryIndex)
     if (newItemName.trim()) {
       const updatedCategories = [...categories];
       const newItem: Items = {
@@ -37,8 +37,10 @@ const CategoryManagementPage: React.FC = () => {
         favorite: false,
         checked: false,
         amount: 1,
+        _id: ''
       };
       updatedCategories[categoryIndex].items.push(newItem);
+      saveItem(updatedCategories[categoryIndex]._id, newItem)
       setCategories(updatedCategories);
       setNewItemName('');
     }
@@ -116,14 +118,14 @@ const CategoryManagementPage: React.FC = () => {
           )}
         </div>
 
-        {categories.length === 0 ? (
+        {categories.filter(category => category.listId === id).length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             <FolderPlus size={48} className="mx-auto mb-4 opacity-50" />
             <p className="text-lg">No categories yet. Create your first category to get started!</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {categories.map((category, categoryIndex) => (
+            {categories.filter(category => category.listId === id).map((category, categoryIndex) => (
               <div key={categoryIndex} className="bg-white rounded-xl shadow-lg border border-gray-100">
                 <div
                   className="p-6 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors duration-200"

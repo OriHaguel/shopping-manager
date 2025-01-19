@@ -9,7 +9,7 @@ export function RootCmp() {
             {/* <AppHeader /> */}
             <main>
                 <Routes>
-                    {/* <Route path='/' element={<CategoryManagementPage />} /> */}
+                    <Route path='/list/:id' element={<CategoryManagementPage />} />
                     <Route path='/' element={<ListPresetPage />} />
                 </Routes>
             </main>

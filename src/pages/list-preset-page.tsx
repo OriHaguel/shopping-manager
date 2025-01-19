@@ -17,16 +17,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { List } from '@/dtos/list';
 import { getLists, removeList, saveList } from '@/services/item.service';
+import { useNavigate } from 'react-router-dom';
 
 
 const ListPresetPage = () => {
-
+  const navigate = useNavigate()
   const [lists, setLists] = useState<List[]>(getLists());
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
+
+  function handleCardClick(id: string) {
+    setSelectedCard(id)
+    navigate(`/list/${id}`)
+  }
 
   function deleteList(id: string) {
     const newList = lists.filter(list => list._id !== id);
@@ -143,7 +149,7 @@ const ListPresetPage = () => {
               key={list._id}
               className={`group hover:shadow-lg transition-all duration-300 hover:border-blue-200 cursor-pointer transform hover:-translate-y-1 ${selectedCard === list._id ? 'ring-2 ring-blue-400' : ''
                 }`}
-              onClick={() => setSelectedCard(list._id)}
+              onClick={() => handleCardClick(list._id)}
               style={{
                 animation: `fadeSlideIn 0.5s ease-out ${index * 0.1}s both`
               }}
