@@ -37,4 +37,26 @@ export function saveItem(categoryId: string, item: Items) {
 
     return storageService.put(KEY, category); // Save the updated category
 }
+// export function removeItem(categoryId: string, item: Items) {
+//     const category = storageService.get(KEY, categoryId) as Category;
+//     if (!category) {
+//         throw new Error('Category not found');
+//     }
+
+//     if (item._id && item._id !== '') {
+//         // Update existing item
+//         const itemIndex = category.items.findIndex((i) => i._id === item._id);
+//         if (itemIndex !== -1) {
+//             category.items[itemIndex] = item;
+//         } else {
+//             throw new Error('Item not found in category');
+//         }
+//     } else {
+//         // Add new item
+//         item._id = storageService.makeId(); // Assuming a helper function `generateId()` exists
+//         category.items.push(item);
+//     }
+
+//     return storageService.put(KEY, category); // Save the updated category
+// }
 // saveItem('fLsri', { name: 'Milk', favorite: true, checked: false, amount: 1, _id: '' })

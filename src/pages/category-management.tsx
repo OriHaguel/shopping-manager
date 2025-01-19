@@ -15,13 +15,11 @@ const CategoryManagementPage: React.FC = () => {
   const [newItemName, setNewItemName] = useState<string>('');
   const [openCategories, setOpenCategories] = useState<OpenCategories>({});
   const { id } = useParams()
-
-
   const handleAddCategory = (): void => {
     if (newCategoryName.trim()) {
       const newCategoryIndex = categories.length;
-      saveCategory({ name: newCategoryName, items: [], listId: id!, _id: '' })
-      setCategories([...categories, { name: newCategoryName, items: [], listId: id!, _id: '' }]);
+      const savedCategory = saveCategory({ name: newCategoryName, items: [], listId: id!, _id: '' })
+      setCategories([...categories, savedCategory]);
       setOpenCategories(prev => ({ ...prev, [newCategoryIndex]: true }));
       setNewCategoryName('');
       setShowCategoryInput(false);
@@ -29,9 +27,9 @@ const CategoryManagementPage: React.FC = () => {
   };
 
   const handleAddItem = (categoryIndex: number): void => {
-    console.log("🚀 ~ handleAddItem ~ categoryIndex:", categoryIndex)
     if (newItemName.trim()) {
-      const updatedCategories = [...categories];
+      // const updatedCategories = [...categories];
+      const updatedCategories = categories.filter(category => category.listId === id);
       const newItem: Items = {
         name: newItemName,
         favorite: false,
