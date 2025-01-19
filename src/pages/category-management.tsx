@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Category, Items } from '../dtos/category'
 
@@ -13,6 +13,11 @@ const CategoryManagementPage: React.FC = () => {
   const [newCategoryName, setNewCategoryName] = useState<string>('');
   const [newItemName, setNewItemName] = useState<string>('');
   const [openCategories, setOpenCategories] = useState<OpenCategories>({});
+
+  function handleInput(ev: any) {
+    console.log("🚀 ~ handleInput ~ ev:", ev.target)
+
+  }
 
   const handleAddCategory = (): void => {
     if (newCategoryName.trim()) {
@@ -30,7 +35,8 @@ const CategoryManagementPage: React.FC = () => {
       const newItem: Items = {
         name: newItemName,
         favorite: false,
-        checked: false
+        checked: false,
+        amount: 1,
       };
       updatedCategories[categoryIndex].items.push(newItem);
       setCategories(updatedCategories);
@@ -155,7 +161,7 @@ const CategoryManagementPage: React.FC = () => {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewItemName(e.target.value)}
                           placeholder="Add new item"
                           className="border-2 border-gray-200 p-3 rounded-lg flex-1 focus:outline-none focus:border-blue-400"
-                          onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleAddItem(categoryIndex)}
+                          onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleAddItem(categoryIndex)}
                         />
                         <button
                           onClick={() => handleAddItem(categoryIndex)}

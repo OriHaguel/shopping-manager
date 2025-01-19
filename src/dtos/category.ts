@@ -9,4 +9,5 @@ export interface Items {
     name: string;
     favorite: boolean;
     checked: boolean;
+    amount: number;
 }
