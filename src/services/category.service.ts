@@ -13,6 +13,8 @@ export function removeCategory(categoryId: string): void {
     return storageService.remove(KEY, categoryId)
 }
 
+
+
 export function saveCategory(category: Category) {
     if (category._id && category._id !== '') {
         return storageService.put(KEY, category)

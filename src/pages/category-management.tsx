@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp } from 'lucide-react';
+import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { Category, Items } from '../dtos/category'
 import { useParams } from 'react-router-dom';
 import { getCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
+import { storageService } from '@/services/async-storage.service';
 
 interface OpenCategories {
   [key: number]: boolean;
@@ -45,7 +46,6 @@ const CategoryManagementPage: React.FC = () => {
       updatedCategories[categoryIndex].items.push(newItem);
       saveItem(updatedCategories[categoryIndex]._id, newItem)
       setCategories(updatedCategories);
-      // Clear only the specific category's input
       setNewItemInputs(prev => ({
         ...prev,
         [categoryIndex]: ''
@@ -78,6 +78,33 @@ const CategoryManagementPage: React.FC = () => {
     setCategories(updatedCategories);
   };
 
+  const handleRemoveChecked = (categoryIndex: number, category: Category): void => {
+
+    const updatedCategories = [...categories];
+    // const getcategory = updatedCategories[categoryIndex];
+    // const uncheckedItems = getcategory.items.filter(item => !item.checked);
+    // const itemsToRemove = getcategory.items.filter(item => item.checked);
+    category.items.forEach(item => {
+      item.checked = false
+    });
+    console.log("🚀 ~ handleRemoveChecked ~ category:", category)
+    // // Remove each checked item
+    // itemsToRemove.forEach(item => {
+    //   saveItem(getcategory._id, item);
+    // });
+    saveCategory(category)
+    updatedCategories[categoryIndex] = category;
+    setCategories(updatedCategories);
+  };
+
+  const handleAmountChange = (categoryIndex: number, itemIndex: number, amount: number, item: Items): void => {
+    const updatedCategories = [...categories];
+    updatedCategories[categoryIndex].items[itemIndex].amount = amount;
+    console.log(updatedCategories[categoryIndex].items[itemIndex].amount)
+    saveItem(updatedCategories[categoryIndex]._id, item);
+    setCategories(updatedCategories);
+  };
+
   const toggleCategory = (categoryIndex: number): void => {
     setOpenCategories(prev => ({
       ...prev,
@@ -87,7 +114,8 @@ const CategoryManagementPage: React.FC = () => {
 
   const toggleItemProperty = (categoryIndex: number, itemIndex: number, property: 'favorite' | 'checked', item: Items): void => {
     const updatedCategories = [...categories];
-    updatedCategories[categoryIndex].items[itemIndex][property] = !item[property]
+    updatedCategories[categoryIndex].items[itemIndex][property] = !updatedCategories[categoryIndex].items[itemIndex][property]
+    // updatedCategories[categoryIndex].items[itemIndex][property] = !item[property]
     saveItem(updatedCategories[categoryIndex]._id, item)
     setCategories(updatedCategories);
   };
@@ -159,15 +187,27 @@ const CategoryManagementPage: React.FC = () => {
                       ({category.items.length} items)
                     </span>
                   </div>
-                  <button
-                    onClick={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      handleDeleteCategory(categoryIndex, category._id);
-                    }}
-                    className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-                  >
-                    <X size={24} />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleRemoveChecked(categoryIndex, category);
+                      }}
+                      className="text-gray-400 hover:text-orange-500 transition-colors duration-200"
+                      title="Remove checked items"
+                    >
+                      <Trash2 size={24} />
+                    </button>
+                    <button
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleDeleteCategory(categoryIndex, category._id);
+                      }}
+                      className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
                 </div>
 
                 {openCategories[categoryIndex] && (
@@ -218,6 +258,15 @@ const CategoryManagementPage: React.FC = () => {
                               <span className={`text-gray-700 ${!item.checked && !item.favorite ? 'line-through' : ''}`}>
                                 {item.name}
                               </span>
+                              <select
+                                value={item.amount}
+                                onChange={(e) => handleAmountChange(categoryIndex, itemIndex, parseInt(e.target.value), item)}
+                                className="ml-2 border border-gray-300 rounded p-1 bg-white"
+                              >
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                                  <option key={num} value={num}>{num}</option>
+                                ))}
+                              </select>
                             </div>
                             <button
                               onClick={() => handleDeleteItem(category, item)}
