@@ -29,7 +29,8 @@ const ListPresetPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
-  function handleCardClick(id: string) {
+  function handleCardClick(ev: any, id: string) {
+    ev.stopPropagation()
     setSelectedCard(id)
     navigate(`/list/${id}`)
   }
@@ -149,7 +150,7 @@ const ListPresetPage = () => {
               key={list._id}
               className={`group hover:shadow-lg transition-all duration-300 hover:border-blue-200 cursor-pointer transform hover:-translate-y-1 ${selectedCard === list._id ? 'ring-2 ring-blue-400' : ''
                 }`}
-              onClick={() => handleCardClick(list._id)}
+              onClick={(event) => handleCardClick(event, list._id)}
               style={{
                 animation: `fadeSlideIn 0.5s ease-out ${index * 0.1}s both`
               }}
@@ -166,7 +167,7 @@ const ListPresetPage = () => {
                     <DropdownMenuTrigger className="group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded-full">
                       <MoreVertical className="h-4 w-4" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent onClick={(event) => event.stopPropagation()}>
                       <DropdownMenuItem className="group/item">
                         <Layout className="mr-2 h-4 w-4 group-hover/item:text-blue-500 transition-colors" />
                         <span className="group-hover/item:text-blue-500 transition-colors">View Details</span>

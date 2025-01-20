@@ -70,10 +70,17 @@ const CategoryManagementPage: React.FC = () => {
     }));
   };
 
-  const toggleItemProperty = (categoryIndex: number, itemIndex: number, property: 'favorite' | 'checked'): void => {
+  const toggleItemProperty = (categoryIndex: number, itemIndex: number, property: 'favorite' | 'checked', item: Items): void => {
+
+    // console.log("🚀 ~ toggleItemProperty ~ item:", item.favorite === true)
     const updatedCategories = [...categories];
-    updatedCategories[categoryIndex].items[itemIndex][property] =
-      !updatedCategories[categoryIndex].items[itemIndex][property];
+    updatedCategories[categoryIndex].items[itemIndex][property] = !item[property]
+
+
+    // newItem[property] = !newItem[property]
+    // !updatedCategories[categoryIndex].items[itemIndex][property];
+    saveItem(updatedCategories[categoryIndex]._id, item)
+
     setCategories(updatedCategories);
   };
 
@@ -189,11 +196,11 @@ const CategoryManagementPage: React.FC = () => {
                               <input
                                 type="checkbox"
                                 checked={item.checked}
-                                onChange={() => toggleItemProperty(categoryIndex, itemIndex, 'checked')}
+                                onChange={() => toggleItemProperty(categoryIndex, itemIndex, 'checked', item)}
                                 className="w-5 h-5 text-blue-600"
                               />
                               <button
-                                onClick={() => toggleItemProperty(categoryIndex, itemIndex, 'favorite')}
+                                onClick={() => toggleItemProperty(categoryIndex, itemIndex, 'favorite', item)}
                                 className={`text-2xl ${item.favorite ? 'text-yellow-500' : 'text-gray-300'}`}
                               >
                                 ★
