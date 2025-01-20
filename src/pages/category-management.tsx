@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Category, Items } from '../dtos/category'
 import { useParams } from 'react-router-dom';
-import { getCategories, saveCategory, saveItem } from '@/services/category.service';
+import { getCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
 
 interface OpenCategories {
   [key: number]: boolean;
 }
 
 const CategoryManagementPage: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>(getCategories());
+  const { id } = useParams()
+  const [categories, setCategories] = useState<Category[]>(getCategories(id!));
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>('');
   const [newItemName, setNewItemName] = useState<string>('');
   const [openCategories, setOpenCategories] = useState<OpenCategories>({});
-  const { id } = useParams()
   const handleAddCategory = (): void => {
     if (newCategoryName.trim()) {
       const newCategoryIndex = categories.length;
@@ -29,7 +29,7 @@ const CategoryManagementPage: React.FC = () => {
   const handleAddItem = (categoryIndex: number): void => {
     if (newItemName.trim()) {
       // const updatedCategories = [...categories];
-      const updatedCategories = categories.filter(category => category.listId === id);
+      const updatedCategories = [...categories];
       const newItem: Items = {
         name: newItemName,
         favorite: false,
@@ -44,18 +44,22 @@ const CategoryManagementPage: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = (indexToDelete: number): void => {
+  const handleDeleteCategory = (indexToDelete: number, categoryId: string): void => {
+    removeCategory(categoryId)
     setCategories(categories.filter((_, index) => index !== indexToDelete));
     const updatedOpenCategories = { ...openCategories };
     delete updatedOpenCategories[indexToDelete];
     setOpenCategories(updatedOpenCategories);
   };
 
-  const handleDeleteItem = (categoryIndex: number, itemIndex: number): void => {
+  const handleDeleteItem = (category: Category, item: Items): void => {
     const updatedCategories = [...categories];
-    updatedCategories[categoryIndex].items = updatedCategories[categoryIndex].items.filter(
-      (_, index) => index !== itemIndex
-    );
+    const categoryAfterItemRemoved = removeItem(category._id, item._id)
+    const index = updatedCategories.findIndex(cat => cat._id === categoryAfterItemRemoved._id);
+    if (index !== -1) {
+      updatedCategories[index] = categoryAfterItemRemoved;
+    }
+
     setCategories(updatedCategories);
   };
 
@@ -116,14 +120,14 @@ const CategoryManagementPage: React.FC = () => {
           )}
         </div>
 
-        {categories.filter(category => category.listId === id).length === 0 ? (
+        {categories.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             <FolderPlus size={48} className="mx-auto mb-4 opacity-50" />
             <p className="text-lg">No categories yet. Create your first category to get started!</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {categories.filter(category => category.listId === id).map((category, categoryIndex) => (
+            {categories.map((category, categoryIndex) => (
               <div key={categoryIndex} className="bg-white rounded-xl shadow-lg border border-gray-100">
                 <div
                   className="p-6 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors duration-200"
@@ -143,7 +147,7 @@ const CategoryManagementPage: React.FC = () => {
                   <button
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
-                      handleDeleteCategory(categoryIndex);
+                      handleDeleteCategory(categoryIndex, category._id);
                     }}
                     className="text-gray-400 hover:text-red-500 transition-colors duration-200"
                   >
@@ -200,7 +204,7 @@ const CategoryManagementPage: React.FC = () => {
 
                             </div>
                             <button
-                              onClick={() => handleDeleteItem(categoryIndex, itemIndex)}
+                              onClick={() => handleDeleteItem(category, item)}
                               className="text-gray-400 hover:text-red-500 transition-colors duration-200"
                             >
                               <X size={20} />
