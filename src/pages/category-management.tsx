@@ -8,13 +8,18 @@ interface OpenCategories {
   [key: number]: boolean;
 }
 
+interface NewItemInputs {
+  [key: number]: string;
+}
+
 const CategoryManagementPage: React.FC = () => {
   const { id } = useParams()
   const [categories, setCategories] = useState<Category[]>(getCategories(id!));
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>('');
-  const [newItemName, setNewItemName] = useState<string>('');
+  const [newItemInputs, setNewItemInputs] = useState<NewItemInputs>({});
   const [openCategories, setOpenCategories] = useState<OpenCategories>({});
+
   const handleAddCategory = (): void => {
     if (newCategoryName.trim()) {
       const newCategoryIndex = categories.length;
@@ -27,11 +32,11 @@ const CategoryManagementPage: React.FC = () => {
   };
 
   const handleAddItem = (categoryIndex: number): void => {
-    if (newItemName.trim()) {
-      // const updatedCategories = [...categories];
+    const itemName = newItemInputs[categoryIndex];
+    if (itemName?.trim()) {
       const updatedCategories = [...categories];
       const newItem: Items = {
-        name: newItemName,
+        name: itemName,
         favorite: false,
         checked: false,
         amount: 1,
@@ -40,8 +45,19 @@ const CategoryManagementPage: React.FC = () => {
       updatedCategories[categoryIndex].items.push(newItem);
       saveItem(updatedCategories[categoryIndex]._id, newItem)
       setCategories(updatedCategories);
-      setNewItemName('');
+      // Clear only the specific category's input
+      setNewItemInputs(prev => ({
+        ...prev,
+        [categoryIndex]: ''
+      }));
     }
+  };
+
+  const handleItemInputChange = (categoryIndex: number, value: string): void => {
+    setNewItemInputs(prev => ({
+      ...prev,
+      [categoryIndex]: value
+    }));
   };
 
   const handleDeleteCategory = (indexToDelete: number, categoryId: string): void => {
@@ -59,7 +75,6 @@ const CategoryManagementPage: React.FC = () => {
     if (index !== -1) {
       updatedCategories[index] = categoryAfterItemRemoved;
     }
-
     setCategories(updatedCategories);
   };
 
@@ -71,16 +86,9 @@ const CategoryManagementPage: React.FC = () => {
   };
 
   const toggleItemProperty = (categoryIndex: number, itemIndex: number, property: 'favorite' | 'checked', item: Items): void => {
-
-    // console.log("🚀 ~ toggleItemProperty ~ item:", item.favorite === true)
     const updatedCategories = [...categories];
     updatedCategories[categoryIndex].items[itemIndex][property] = !item[property]
-
-
-    // newItem[property] = !newItem[property]
-    // !updatedCategories[categoryIndex].items[itemIndex][property];
     saveItem(updatedCategories[categoryIndex]._id, item)
-
     setCategories(updatedCategories);
   };
 
@@ -168,8 +176,10 @@ const CategoryManagementPage: React.FC = () => {
                       <div className="flex gap-3">
                         <input
                           type="text"
-                          value={newItemName}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewItemName(e.target.value)}
+                          value={newItemInputs[categoryIndex] || ''}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            handleItemInputChange(categoryIndex, e.target.value)
+                          }
                           placeholder="Add new item"
                           className="border-2 border-gray-200 p-3 rounded-lg flex-1 focus:outline-none focus:border-blue-400"
                           onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleAddItem(categoryIndex)}
@@ -208,7 +218,6 @@ const CategoryManagementPage: React.FC = () => {
                               <span className={`text-gray-700 ${!item.checked && !item.favorite ? 'line-through' : ''}`}>
                                 {item.name}
                               </span>
-
                             </div>
                             <button
                               onClick={() => handleDeleteItem(category, item)}
