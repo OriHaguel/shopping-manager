@@ -175,7 +175,7 @@ const CategoryManagementPage: React.FC = () => {
 
 
 
-          {!showCategoryInput ? (
+          {/* {!showCategoryInput ? (
             <button
               onClick={() => setShowCategoryInput(true)}
               className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 mx-auto shadow-md"
@@ -209,7 +209,47 @@ const CategoryManagementPage: React.FC = () => {
                 Cancel
               </button>
             </div>
+          )} */}
+          {!showCategoryInput ? (
+            <button
+              onClick={() => setShowCategoryInput(true)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 mx-auto shadow-md"
+            >
+              <FolderPlus size={24} />
+              <span className="font-semibold">Add New Category</span>
+            </button>
+          ) : (
+            <div className="flex flex-wrap gap-3 justify-center items-center w-full max-w-lg mx-auto">
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewCategoryName(e.target.value)
+                }
+                placeholder="Enter category name"
+                className="border-2 border-gray-200 p-3 rounded-lg w-full sm:w-64 focus:outline-none focus:border-blue-400 shadow-sm"
+                onKeyDown={(e: React.KeyboardEvent) =>
+                  e.key === 'Enter' && handleAddCategory()
+                }
+              />
+              <button
+                onClick={handleAddCategory}
+                className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors duration-200 font-semibold shadow-sm w-full sm:w-auto"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => {
+                  setShowCategoryInput(false);
+                  setNewCategoryName('');
+                }}
+                className="bg-gray-400 text-white px-6 py-3 rounded-lg hover:bg-gray-500 transition-colors duration-200 font-semibold shadow-sm w-full sm:w-auto"
+              >
+                Cancel
+              </button>
+            </div>
           )}
+
         </div>
 
         {filteredCategories.length === 0 ? (
