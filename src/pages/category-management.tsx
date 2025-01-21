@@ -191,7 +191,7 @@ const CategoryManagementPage: React.FC = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCategoryName(e.target.value)}
                 placeholder="Enter category name"
                 className="border-2 border-gray-200 p-3 rounded-lg w-64 focus:outline-none focus:border-blue-400 shadow-sm"
-                onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleAddCategory()}
+                onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleAddCategory()}
               />
               <button
                 onClick={handleAddCategory}

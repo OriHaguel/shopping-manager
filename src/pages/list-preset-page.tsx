@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { List } from '@/dtos/list';
 import { getLists, removeList, saveList } from '@/services/item.service';
 import { useNavigate } from 'react-router-dom';
+import { getLoggedinUser } from '@/services/user.service';
 
 
 const ListPresetPage = () => {
@@ -49,7 +50,7 @@ const ListPresetPage = () => {
       const newList: List = {
         name: newListName,
         _id: '',
-        ownerId: ''
+        ownerId: getLoggedinUser()._id
       };
 
       setLists([...lists, saveList(newList)]);
@@ -61,7 +62,7 @@ const ListPresetPage = () => {
 
   const filteredLists = lists.filter(list =>
     list.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).filter(list => list.ownerId === getLoggedinUser()._id);
 
   return (
     <div className="min-h-screen bg-gray-50/30">
