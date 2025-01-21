@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp, Trash2, Star, CheckSquare, Search } from 'lucide-react';
 import { Category, Items } from '../dtos/category'
 import { useParams } from 'react-router-dom';
 import { getCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
-import { storageService } from '@/services/async-storage.service';
 
 interface OpenCategories {
   [key: number]: boolean;
@@ -20,6 +19,28 @@ const CategoryManagementPage: React.FC = () => {
   const [newCategoryName, setNewCategoryName] = useState<string>('');
   const [newItemInputs, setNewItemInputs] = useState<NewItemInputs>({});
   const [openCategories, setOpenCategories] = useState<OpenCategories>({});
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [showFavorites, setShowFavorites] = useState<boolean>(false);
+  const [showChecked, setShowChecked] = useState<boolean>(false);
+
+
+  const filterItems = (items: Items[]): Items[] => {
+    return items.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFavorite = showFavorites ? item.favorite : true;
+      const matchesChecked = showChecked ? item.checked : true;
+      return matchesSearch && matchesFavorite && matchesChecked;
+    });
+  };
+
+  const filteredCategories = categories.map(category => ({
+    ...category,
+    items: filterItems(category.items),
+  })).filter(category =>
+    searchTerm === '' ||
+    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    category.items.length > 0
+  );
 
   const handleAddCategory = (): void => {
     if (newCategoryName.trim()) {
@@ -81,28 +102,20 @@ const CategoryManagementPage: React.FC = () => {
   const handleRemoveChecked = (categoryIndex: number, category: Category): void => {
 
     const updatedCategories = [...categories];
-    // const getcategory = updatedCategories[categoryIndex];
-    // const uncheckedItems = getcategory.items.filter(item => !item.checked);
-    // const itemsToRemove = getcategory.items.filter(item => item.checked);
     category.items.forEach(item => {
       item.checked = false
     });
-    console.log("🚀 ~ handleRemoveChecked ~ category:", category)
-    // // Remove each checked item
-    // itemsToRemove.forEach(item => {
-    //   saveItem(getcategory._id, item);
-    // });
     saveCategory(category)
     updatedCategories[categoryIndex] = category;
     setCategories(updatedCategories);
   };
 
-  const handleAmountChange = (categoryIndex: number, itemIndex: number, amount: number, item: Items): void => {
+  const handleAmountChange = (amount: number, item: Items, category: Category): void => {
     const updatedCategories = [...categories];
-    updatedCategories[categoryIndex].items[itemIndex].amount = amount;
-    console.log(updatedCategories[categoryIndex].items[itemIndex].amount)
-    saveItem(updatedCategories[categoryIndex]._id, item);
-    setCategories(updatedCategories);
+    const catUp = updatedCategories.map((cat) => (cat._id === category._id ? { ...cat, items: cat.items.map((it) => (it._id === item._id ? { ...it, amount } : it)) } : cat))
+    item.amount = amount
+    saveItem(category._id, item);
+    setCategories(catUp);
   };
 
   const toggleCategory = (categoryIndex: number): void => {
@@ -112,12 +125,12 @@ const CategoryManagementPage: React.FC = () => {
     }));
   };
 
-  const toggleItemProperty = (categoryIndex: number, itemIndex: number, property: 'favorite' | 'checked', item: Items): void => {
+  const toggleItemProperty = (property: 'favorite' | 'checked', item: Items, category: Category): void => {
     const updatedCategories = [...categories];
-    updatedCategories[categoryIndex].items[itemIndex][property] = !updatedCategories[categoryIndex].items[itemIndex][property]
-    // updatedCategories[categoryIndex].items[itemIndex][property] = !item[property]
-    saveItem(updatedCategories[categoryIndex]._id, item)
-    setCategories(updatedCategories);
+    const catUp = updatedCategories.map((cat) => (cat._id === category._id ? { ...cat, items: cat.items.map((it) => (it._id === item._id ? { ...it, [property]: !it[property] } : it)) } : cat))
+    item[property] = !item[property]
+    saveItem(category._id, item)
+    setCategories(catUp);
   };
 
   return (
@@ -125,6 +138,42 @@ const CategoryManagementPage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold mb-6 text-gray-800">Category Management</h1>
+
+
+          {/* Search and Filter Section */}
+          <div className="mb-8 space-y-4">
+            <div className="relative max-w-xl mx-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search categories and items..."
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 shadow-sm"
+              />
+            </div>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowFavorites(!showFavorites)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${showFavorites ? 'bg-yellow-50 border-yellow-200 text-yellow-700' : 'border-gray-200 text-gray-600'
+                  }`}
+              >
+                <Star size={18} className={showFavorites ? 'fill-yellow-500 text-yellow-500' : ''} />
+                Favorites
+              </button>
+              <button
+                onClick={() => setShowChecked(!showChecked)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${showChecked ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 text-gray-600'
+                  }`}
+              >
+                <CheckSquare size={18} className={showChecked ? 'text-blue-500' : ''} />
+                Checked
+              </button>
+            </div>
+          </div>
+
+
+
 
           {!showCategoryInput ? (
             <button
@@ -163,14 +212,23 @@ const CategoryManagementPage: React.FC = () => {
           )}
         </div>
 
-        {categories.length === 0 ? (
+        {filteredCategories.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
-            <FolderPlus size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No categories yet. Create your first category to get started!</p>
+            {categories.length === 0 ? (
+              <>
+                <FolderPlus size={48} className="mx-auto mb-4 opacity-50" />
+                <p className="text-lg">No categories yet. Create your first category to get started!</p>
+              </>
+            ) : (
+              <>
+                <Search size={48} className="mx-auto mb-4 opacity-50" />
+                <p className="text-lg">No matches found for your search criteria.</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
-            {categories.map((category, categoryIndex) => (
+            {filteredCategories.map((category, categoryIndex) => (
               <div key={categoryIndex} className="bg-white rounded-xl shadow-lg border border-gray-100">
                 <div
                   className="p-6 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors duration-200"
@@ -246,11 +304,11 @@ const CategoryManagementPage: React.FC = () => {
                               <input
                                 type="checkbox"
                                 checked={item.checked}
-                                onChange={() => toggleItemProperty(categoryIndex, itemIndex, 'checked', item)}
+                                onChange={() => toggleItemProperty('checked', item, category)}
                                 className="w-5 h-5 text-blue-600"
                               />
                               <button
-                                onClick={() => toggleItemProperty(categoryIndex, itemIndex, 'favorite', item)}
+                                onClick={() => toggleItemProperty('favorite', item, category)}
                                 className={`text-2xl ${item.favorite ? 'text-yellow-500' : 'text-gray-300'}`}
                               >
                                 ★
@@ -260,7 +318,7 @@ const CategoryManagementPage: React.FC = () => {
                               </span>
                               <select
                                 value={item.amount}
-                                onChange={(e) => handleAmountChange(categoryIndex, itemIndex, parseInt(e.target.value), item)}
+                                onChange={(e) => handleAmountChange(parseInt(e.target.value), item, category)}
                                 className="ml-2 border border-gray-300 rounded p-1 bg-white"
                               >
                                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
