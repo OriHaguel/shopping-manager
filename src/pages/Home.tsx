@@ -97,9 +97,11 @@ const HomePage = () => {
                             Join thousands of satisfied users today.
                         </p>
                         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                            <Button className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105">
-                                Get Started Free <ArrowRight className="ml-2" />
-                            </Button>
+                            <Link to={'/auth'}>
+                                <Button className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105">
+                                    Get Started Free <ArrowRight className="ml-2" />
+                                </Button>
+                            </Link>
                             <Button variant="outline" className="text-lg px-8 py-6 hover:bg-gray-50 transition-all">
                                 Watch Demo
                             </Button>
