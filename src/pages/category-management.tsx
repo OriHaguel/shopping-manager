@@ -1,8 +1,27 @@
 import { useState } from 'react';
 import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp, Trash2, Star, CheckSquare, Search } from 'lucide-react';
-import { Category, Items } from '../dtos/category'
+import { Category, Items } from '../dtos/category';
 import { useParams } from 'react-router-dom';
 import { getCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface OpenCategories {
   [key: number]: boolean;
@@ -11,6 +30,178 @@ interface OpenCategories {
 interface NewItemInputs {
   [key: number]: string;
 }
+
+interface SortableItemProps {
+  id: string;
+  item: Items;
+  category: Category;
+  onToggleProperty: (property: 'favorite' | 'checked', item: Items, category: Category) => void;
+  onAmountChange: (amount: number, item: Items, category: Category) => void;
+  onDeleteItem: (category: Category, item: Items) => void;
+}
+
+interface SortableCategoryProps {
+  id: string;
+  category: Category;
+  isOpen: boolean;
+  onToggle: () => void;
+  onDeleteCategory: () => void;
+  onRemoveChecked: () => void;
+  children: React.ReactNode;
+}
+
+const SortableItem: React.FC<SortableItemProps> = ({ id, item, category, onToggleProperty, onAmountChange, onDeleteItem }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+    >
+      {/* Drag handle */}
+      <div
+        className="mr-3 cursor-move text-gray-400 hover:text-gray-600"
+        {...attributes}
+        {...listeners}
+      >
+        ⋮⋮
+      </div>
+
+      {/* Item content */}
+      <div className="flex-1 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={item.checked}
+            onChange={() => onToggleProperty('checked', item, category)}
+            className="w-5 h-5 text-blue-600"
+          />
+          <button
+            onClick={() => onToggleProperty('favorite', item, category)}
+            className={`text-2xl ${item.favorite ? 'text-yellow-500' : 'text-gray-300'}`}
+          >
+            ★
+          </button>
+          <span className={`text-gray-700 ${item.checked ? 'line-through' : ''}`}>
+            {item.name}
+          </span>
+          <select
+            value={item.amount}
+            onChange={(e) => onAmountChange(parseInt(e.target.value), item, category)}
+            className="ml-2 border border-gray-300 rounded p-1 bg-white"
+          >
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+              <option key={num} value={num}>{num}</option>
+            ))}
+          </select>
+        </div>
+        <button
+          onClick={() => onDeleteItem(category, item)}
+          className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+        >
+          <X size={20} />
+        </button>
+      </div>
+    </li>
+  );
+};
+const SortableCategory: React.FC<SortableCategoryProps> = ({
+  id,
+  category,
+  isOpen,
+  onToggle,
+  onDeleteCategory,
+  onRemoveChecked,
+  children
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white rounded-xl shadow-lg border border-gray-100"
+    >
+      <div className="p-6 flex justify-between items-center">
+        {/* Drag handle */}
+        <div
+          className="mr-2 cursor-move text-gray-400 hover:text-gray-600"
+          {...attributes}
+          {...listeners}
+        >
+          ⋮⋮
+        </div>
+
+        {/* Clickable header area */}
+        <div
+          className="flex-1 flex justify-between items-center hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+          onClick={onToggle}
+        >
+          <div className="flex items-center gap-3">
+            {isOpen ? (
+              <ChevronUp size={24} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={24} className="text-gray-400" />
+            )}
+            <h2 className="text-2xl font-bold text-gray-800">{category.name}</h2>
+            <span className="text-gray-400 text-sm">
+              ({category.items.length} items)
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveChecked();
+              }}
+              className="text-gray-400 hover:text-orange-500 transition-colors duration-200"
+              title="Remove checked items"
+            >
+              <Trash2 size={24} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteCategory();
+              }}
+              className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+      </div>
+      {isOpen && children}
+    </div>
+  );
+};
 
 const CategoryManagementPage: React.FC = () => {
   const { id } = useParams()
@@ -22,7 +213,78 @@ const CategoryManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFavorites, setShowFavorites] = useState<boolean>(false);
   const [showChecked, setShowChecked] = useState<boolean>(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragStart = (event: any) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    if (typeof active.id === 'string' && active.id !== over.id) {
+      const isCategory = active.id.startsWith('category-');
+
+      if (isCategory) {
+        const oldIndex = categories.findIndex(cat => `category-${cat._id}` === active.id);
+        const newIndex = categories.findIndex(cat => `category-${cat._id}` === over.id);
+
+        const reorderedCategories = arrayMove(categories, oldIndex, newIndex);
+        setCategories(reorderedCategories);
+        // You might want to save the new order to your backend here
+      } else {
+        // Ensure active.id and over.id are both strings before calling split
+        if (typeof active.id === 'string' && typeof over.id === 'string') {
+          const [sourceItemId, sourceCategoryId] = active.id.split('-in-category-');
+          const [targetItemId, targetCategoryId] = over.id.split('-in-category-');
+
+          const sourceCategory = categories.find(cat => cat._id === sourceCategoryId);
+          const targetCategory = categories.find(cat => cat._id === targetCategoryId);
+
+          if (sourceCategory && targetCategory) {
+            const sourceItemIndex = sourceCategory.items.findIndex(item => item._id === sourceItemId);
+            const targetItemIndex = targetCategory.items.findIndex(item => item._id === targetItemId);
+
+            const newCategories = [...categories];
+
+            if (sourceCategoryId === targetCategoryId) {
+              // Moving within the same category
+              const categoryIndex = categories.findIndex(cat => cat._id === sourceCategoryId);
+              newCategories[categoryIndex].items = arrayMove(
+                sourceCategory.items,
+                sourceItemIndex,
+                targetItemIndex
+              );
+            } else {
+              // Moving between categories
+              const item = sourceCategory.items[sourceItemIndex];
+              const sourceCategoryIndex = categories.findIndex(cat => cat._id === sourceCategoryId);
+              const targetCategoryIndex = categories.findIndex(cat => cat._id === targetCategoryId);
+
+              newCategories[sourceCategoryIndex].items = sourceCategory.items.filter((_, index) => index !== sourceItemIndex);
+              newCategories[targetCategoryIndex].items.splice(targetItemIndex, 0, item);
+            }
+            const categoryAfterDrag = newCategories.find(cat => cat._id === sourceCategoryId)
+            saveCategory(categoryAfterDrag!)
+            setCategories(newCategories);
+            // Save changes to backend here
+          }
+        }
+      }
+    }
+
+    setActiveId(null);
+  };
 
   const filterItems = (items: Items[]): Items[] => {
     return items.filter(item => {
@@ -139,7 +401,6 @@ const CategoryManagementPage: React.FC = () => {
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold mb-6 text-gray-800">Category Management</h1>
 
-
           {/* Search and Filter Section */}
           <div className="mb-8 space-y-4">
             <div className="relative max-w-xl mx-auto">
@@ -172,44 +433,7 @@ const CategoryManagementPage: React.FC = () => {
             </div>
           </div>
 
-
-
-
-          {/* {!showCategoryInput ? (
-            <button
-              onClick={() => setShowCategoryInput(true)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 mx-auto shadow-md"
-            >
-              <FolderPlus size={24} />
-              <span className="font-semibold">Add New Category</span>
-            </button>
-          ) : (
-            <div className="flex gap-3 justify-center">
-              <input
-                type="text"
-                value={newCategoryName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCategoryName(e.target.value)}
-                placeholder="Enter category name"
-                className="border-2 border-gray-200 p-3 rounded-lg w-64 focus:outline-none focus:border-blue-400 shadow-sm"
-                onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleAddCategory()}
-              />
-              <button
-                onClick={handleAddCategory}
-                className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors duration-200 font-semibold shadow-sm"
-              >
-                Add
-              </button>
-              <button
-                onClick={() => {
-                  setShowCategoryInput(false);
-                  setNewCategoryName('');
-                }}
-                className="bg-gray-400 text-white px-6 py-3 rounded-lg hover:bg-gray-500 transition-colors duration-200 font-semibold shadow-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          )} */}
+          {/* Add Category Section */}
           {!showCategoryInput ? (
             <button
               onClick={() => setShowCategoryInput(true)}
@@ -223,14 +447,10 @@ const CategoryManagementPage: React.FC = () => {
               <input
                 type="text"
                 value={newCategoryName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewCategoryName(e.target.value)
-                }
+                onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="Enter category name"
                 className="border-2 border-gray-200 p-3 rounded-lg w-full sm:w-64 focus:outline-none focus:border-blue-400 shadow-sm"
-                onKeyDown={(e: React.KeyboardEvent) =>
-                  e.key === 'Enter' && handleAddCategory()
-                }
+                onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
               />
               <button
                 onClick={handleAddCategory}
@@ -249,9 +469,9 @@ const CategoryManagementPage: React.FC = () => {
               </button>
             </div>
           )}
-
         </div>
 
+        {/* Categories List Section */}
         {filteredCategories.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             {categories.length === 0 ? (
@@ -267,120 +487,98 @@ const CategoryManagementPage: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredCategories.map((category, categoryIndex) => (
-              <div key={categoryIndex} className="bg-white rounded-xl shadow-lg border border-gray-100">
-                <div
-                  className="p-6 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors duration-200"
-                  onClick={() => toggleCategory(categoryIndex)}
-                >
-                  <div className="flex items-center gap-3">
-                    {openCategories[categoryIndex] ? (
-                      <ChevronUp size={24} className="text-gray-400" />
-                    ) : (
-                      <ChevronDown size={24} className="text-gray-400" />
-                    )}
-                    <h2 className="text-2xl font-bold text-gray-800">{category.name}</h2>
-                    <span className="text-gray-400 text-sm">
-                      ({category.items.length} items)
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        handleRemoveChecked(categoryIndex, category);
-                      }}
-                      className="text-gray-400 hover:text-orange-500 transition-colors duration-200"
-                      title="Remove checked items"
-                    >
-                      <Trash2 size={24} />
-                    </button>
-                    <button
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        handleDeleteCategory(categoryIndex, category._id);
-                      }}
-                      className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-                </div>
-
-                {openCategories[categoryIndex] && (
-                  <div className="p-6 border-t border-gray-100">
-                    <div className="mb-6">
-                      <div className="flex gap-3">
-                        <input
-                          type="text"
-                          value={newItemInputs[categoryIndex] || ''}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            handleItemInputChange(categoryIndex, e.target.value)
-                          }
-                          placeholder="Add new item"
-                          className="border-2 border-gray-200 p-3 rounded-lg flex-1 focus:outline-none focus:border-blue-400"
-                          onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleAddItem(categoryIndex)}
-                        />
-                        <button
-                          onClick={() => handleAddItem(categoryIndex)}
-                          className="bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                        >
-                          <PlusCircle size={24} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {category.items.length === 0 ? (
-                      <p className="text-gray-400 text-center py-4">No items yet</p>
-                    ) : (
-                      <ul className="space-y-3">
-                        {category.items.map((item, itemIndex) => (
-                          <li
-                            key={itemIndex}
-                            className="flex justify-between items-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={categories.map(cat => `category-${cat._id}`)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-4">
+                {filteredCategories.map((category, categoryIndex) => (
+                  <SortableCategory
+                    key={`category-${category._id}`}
+                    id={`category-${category._id}`}
+                    category={category}
+                    isOpen={openCategories[categoryIndex]}
+                    onToggle={() => toggleCategory(categoryIndex)}
+                    onDeleteCategory={() => handleDeleteCategory(categoryIndex, category._id)}
+                    onRemoveChecked={() => handleRemoveChecked(categoryIndex, category)}
+                  >
+                    <div className="p-6 border-t border-gray-100">
+                      <div className="mb-6">
+                        <div className="flex gap-3">
+                          <input
+                            type="text"
+                            value={newItemInputs[categoryIndex] || ''}
+                            onChange={(e) => handleItemInputChange(categoryIndex, e.target.value)}
+                            placeholder="Add new item"
+                            className="border-2 border-gray-200 p-3 rounded-lg flex-1 focus:outline-none focus:border-blue-400"
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddItem(categoryIndex)}
+                          />
+                          <button
+                            onClick={() => handleAddItem(categoryIndex)}
+                            className="bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 transition-colors duration-200"
                           >
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={item.checked}
-                                onChange={() => toggleItemProperty('checked', item, category)}
-                                className="w-5 h-5 text-blue-600"
+                            <PlusCircle size={24} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {category.items.length === 0 ? (
+                        <p className="text-gray-400 text-center py-4">No items yet</p>
+                      ) : (
+                        <SortableContext
+                          items={category.items.map(item => `${item._id}-in-category-${category._id}`)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <ul className="space-y-3">
+                            {category.items.map((item) => (
+                              <SortableItem
+                                key={`${item._id}-in-category-${category._id}`}
+                                id={`${item._id}-in-category-${category._id}`}
+                                item={item}
+                                category={category}
+                                onToggleProperty={toggleItemProperty}
+                                onAmountChange={handleAmountChange}
+                                onDeleteItem={handleDeleteItem}
                               />
-                              <button
-                                onClick={() => toggleItemProperty('favorite', item, category)}
-                                className={`text-2xl ${item.favorite ? 'text-yellow-500' : 'text-gray-300'}`}
-                              >
-                                ★
-                              </button>
-                              <span className={`text-gray-700 ${!item.checked && !item.favorite ? 'line-through' : ''}`}>
-                                {item.name}
-                              </span>
-                              <select
-                                value={item.amount}
-                                onChange={(e) => handleAmountChange(parseInt(e.target.value), item, category)}
-                                className="ml-2 border border-gray-300 rounded p-1 bg-white"
-                              >
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                                  <option key={num} value={num}>{num}</option>
-                                ))}
-                              </select>
-                            </div>
-                            <button
-                              onClick={() => handleDeleteItem(category, item)}
-                              className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-                            >
-                              <X size={20} />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
+                            ))}
+                          </ul>
+                        </SortableContext>
+                      )}
+                    </div>
+                  </SortableCategory>
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+
+            <DragOverlay>
+              {activeId ? (
+                <div className="bg-white rounded-xl shadow-xl border border-gray-200 opacity-80">
+                  {activeId.startsWith('category-') ? (
+                    <div className="p-6">
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        {categories.find(cat => `category-${cat._id}` === activeId)?.name}
+                      </h2>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      {(() => {
+                        const [itemId, categoryId] = activeId.split('-in-category-');
+                        const category = categories.find(cat => cat._id === categoryId);
+                        const item = category?.items.find(item => item._id === itemId);
+                        return item?.name;
+                      })()}
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         )}
       </div>
     </div>

@@ -37,4 +37,3 @@ export function getLoggedinUser(): UserDtoWithId {
     return user ? JSON.parse(user) : null;
 
 }
-console.log("🚀 ~ getLoggedinUser ~ getLoggedinUser():", getLoggedinUser())
