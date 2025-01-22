@@ -1,9 +1,8 @@
 import { Routes, Route } from 'react-router'
 import Homepage from './pages/Home'
-
-import CategoryManagementPage from './pages/category-management'
 import ListPresetPage from './pages/list-preset-page'
 import AuthPage from './pages/fitness-auth-page'
+import { CategoryManagementPage } from './pages/category-management'
 // import { AppHeader } from './cmps/AppHeader'
 export function RootCmp() {
     return (
