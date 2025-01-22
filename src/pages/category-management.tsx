@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PlusCircle, X, FolderPlus, ChevronDown, ChevronUp, Trash2, Star, CheckSquare, Search } from 'lucide-react';
+import { PlusCircle, FolderPlus, Star, CheckSquare, Search } from 'lucide-react';
 import { Category, Items } from '../dtos/category';
 import { useParams } from 'react-router-dom';
 import { getCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
@@ -11,7 +11,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragStartEvent,
   DragEndEvent,
 } from '@dnd-kit/core';
 import {
@@ -19,191 +18,18 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-  useSortable,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableItem } from '@/cmps/SortItem';
+import { SortableCategory } from '@/cmps/SortCategory';
 
 interface OpenCategories {
   [key: number]: boolean;
 }
-
 interface NewItemInputs {
   [key: number]: string;
 }
 
-interface SortableItemProps {
-  id: string;
-  item: Items;
-  category: Category;
-  onToggleProperty: (property: 'favorite' | 'checked', item: Items, category: Category) => void;
-  onAmountChange: (amount: number, item: Items, category: Category) => void;
-  onDeleteItem: (category: Category, item: Items) => void;
-}
-
-interface SortableCategoryProps {
-  id: string;
-  category: Category;
-  isOpen: boolean;
-  onToggle: () => void;
-  onDeleteCategory: () => void;
-  onRemoveChecked: () => void;
-  children: React.ReactNode;
-}
-
-const SortableItem: React.FC<SortableItemProps> = ({ id, item, category, onToggleProperty, onAmountChange, onDeleteItem }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-    >
-      {/* Drag handle */}
-      <div
-        className="mr-3 cursor-move text-gray-400 hover:text-gray-600"
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </div>
-
-      {/* Item content */}
-      <div className="flex-1 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={item.checked}
-            onChange={() => onToggleProperty('checked', item, category)}
-            className="w-5 h-5 text-blue-600"
-          />
-          <button
-            onClick={() => onToggleProperty('favorite', item, category)}
-            className={`text-2xl ${item.favorite ? 'text-yellow-500' : 'text-gray-300'}`}
-          >
-            ★
-          </button>
-          <span className={`text-gray-700 ${item.checked ? 'line-through' : ''}`}>
-            {item.name}
-          </span>
-          <select
-            value={item.amount}
-            onChange={(e) => onAmountChange(parseInt(e.target.value), item, category)}
-            className="ml-2 border border-gray-300 rounded p-1 bg-white"
-          >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-              <option key={num} value={num}>{num}</option>
-            ))}
-          </select>
-        </div>
-        <button
-          onClick={() => onDeleteItem(category, item)}
-          className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-        >
-          <X size={20} />
-        </button>
-      </div>
-    </li>
-  );
-};
-const SortableCategory: React.FC<SortableCategoryProps> = ({
-  id,
-  category,
-  isOpen,
-  onToggle,
-  onDeleteCategory,
-  onRemoveChecked,
-  children
-}) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="bg-white rounded-xl shadow-lg border border-gray-100"
-    >
-      <div className="p-6 flex justify-between items-center">
-        {/* Drag handle */}
-        <div
-          className="mr-2 cursor-move text-gray-400 hover:text-gray-600"
-          {...attributes}
-          {...listeners}
-        >
-          ⋮⋮
-        </div>
-
-        {/* Clickable header area */}
-        <div
-          className="flex-1 flex justify-between items-center hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-          onClick={onToggle}
-        >
-          <div className="flex items-center gap-3">
-            {isOpen ? (
-              <ChevronUp size={24} className="text-gray-400" />
-            ) : (
-              <ChevronDown size={24} className="text-gray-400" />
-            )}
-            <h2 className="text-2xl font-bold text-gray-800">{category.name}</h2>
-            <span className="text-gray-400 text-sm">
-              ({category.items.length} items)
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemoveChecked();
-              }}
-              className="text-gray-400 hover:text-orange-500 transition-colors duration-200"
-              title="Remove checked items"
-            >
-              <Trash2 size={24} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteCategory();
-              }}
-              className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-            >
-              <X size={24} />
-            </button>
-          </div>
-        </div>
-      </div>
-      {isOpen && children}
-    </div>
-  );
-};
-
-const CategoryManagementPage: React.FC = () => {
+export const CategoryManagementPage: React.FC = () => {
   const { id } = useParams()
   const [categories, setCategories] = useState<Category[]>(getCategories(id!));
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
@@ -214,7 +40,6 @@ const CategoryManagementPage: React.FC = () => {
   const [showFavorites, setShowFavorites] = useState<boolean>(false);
   const [showChecked, setShowChecked] = useState<boolean>(false);
   const [activeId, setActiveId] = useState<string | null>(null);
-
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -584,5 +409,3 @@ const CategoryManagementPage: React.FC = () => {
     </div>
   );
 };
-
-export default CategoryManagementPage;
