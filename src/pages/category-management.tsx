@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PlusCircle, FolderPlus, Star, CheckSquare, Search } from 'lucide-react';
+import { PlusCircle, FolderPlus, Star, CheckSquare, Search, X } from 'lucide-react';
 import { Category, Items } from '../dtos/category';
 import { useParams } from 'react-router-dom';
 import { getCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
@@ -21,6 +21,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableItem } from '@/cmps/SortItem';
 import { SortableCategory } from '@/cmps/SortCategory';
+import Swal from 'sweetalert2';
 
 interface OpenCategories {
   [key: number]: boolean;
@@ -111,6 +112,25 @@ export const CategoryManagementPage: React.FC = () => {
     setActiveId(null);
   };
 
+  function confirmDeleteCategory() {
+    return Swal.fire({
+      title: 'Are you sure?',
+      text: 'You won\'t be able to revert this!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
+        return true
+      } else {
+        return false
+      }
+    });
+  }
+
   const filterItems = (items: Items[]): Items[] => {
     return items.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -168,22 +188,28 @@ export const CategoryManagementPage: React.FC = () => {
     }));
   };
 
-  const handleDeleteCategory = (indexToDelete: number, categoryId: string): void => {
-    removeCategory(categoryId)
-    setCategories(categories.filter((_, index) => index !== indexToDelete));
-    const updatedOpenCategories = { ...openCategories };
-    delete updatedOpenCategories[indexToDelete];
-    setOpenCategories(updatedOpenCategories);
+  const handleDeleteCategory = async (indexToDelete: number, categoryId: string): Promise<void> => {
+    const toDelete = await confirmDeleteCategory()
+    if (toDelete) {
+      removeCategory(categoryId)
+      setCategories(categories.filter((_, index) => index !== indexToDelete));
+      const updatedOpenCategories = { ...openCategories };
+      delete updatedOpenCategories[indexToDelete];
+      setOpenCategories(updatedOpenCategories);
+    }
   };
 
-  const handleDeleteItem = (category: Category, item: Items): void => {
-    const updatedCategories = [...categories];
-    const categoryAfterItemRemoved = removeItem(category._id, item._id)
-    const index = updatedCategories.findIndex(cat => cat._id === categoryAfterItemRemoved._id);
-    if (index !== -1) {
-      updatedCategories[index] = categoryAfterItemRemoved;
+  const handleDeleteItem = async (category: Category, item: Items): Promise<void> => {
+    const toDelete = await confirmDeleteCategory()
+    if (toDelete) {
+      const updatedCategories = [...categories];
+      const categoryAfterItemRemoved = removeItem(category._id, item._id)
+      const index = updatedCategories.findIndex(cat => cat._id === categoryAfterItemRemoved._id);
+      if (index !== -1) {
+        updatedCategories[index] = categoryAfterItemRemoved;
+      }
+      setCategories(updatedCategories);
     }
-    setCategories(updatedCategories);
   };
 
   const handleRemoveChecked = (categoryIndex: number, category: Category): void => {
@@ -218,6 +244,10 @@ export const CategoryManagementPage: React.FC = () => {
     item[property] = !item[property]
     saveItem(category._id, item)
     setCategories(catUp);
+  };
+
+  const handleClearFilters = (): void => {
+    setSearchTerm('');
   };
 
   return (
@@ -255,6 +285,15 @@ export const CategoryManagementPage: React.FC = () => {
                 <CheckSquare size={18} className={showChecked ? 'text-blue-500' : ''} />
                 Checked
               </button>
+              {(searchTerm) && (
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <X size={18} />
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 
