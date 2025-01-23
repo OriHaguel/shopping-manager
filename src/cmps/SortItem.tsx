@@ -40,7 +40,7 @@ export const SortableItem: React.FC<SortableItemProps> = ({ id, item, category, 
         <li
             ref={setNodeRef}
             style={style}
-            className="flex items-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+            className="flex items-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 touch-none"
         >
             {/* Drag handle */}
             <div
