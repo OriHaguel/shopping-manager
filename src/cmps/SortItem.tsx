@@ -40,11 +40,11 @@ export const SortableItem: React.FC<SortableItemProps> = ({ id, item, category, 
         <li
             ref={setNodeRef}
             style={style}
-            className="flex items-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 touch-none"
+            className="flex items-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
         >
             {/* Drag handle */}
             <div
-                className="mr-3 cursor-move text-gray-400 hover:text-gray-600"
+                className="mr-3 cursor-move text-gray-400 hover:text-gray-600 touch-none"
                 {...attributes}
                 {...listeners}
             >
@@ -66,7 +66,7 @@ export const SortableItem: React.FC<SortableItemProps> = ({ id, item, category, 
                     >
                         ★
                     </button>
-                    <span className={`text-gray-700 ${item.checked ? 'line-through' : ''}`}>
+                    <span className={`text-gray-700`}>
                         {item.name}
                     </span>
                     <select

@@ -108,6 +108,8 @@ const ListPresetPage = () => {
                   type="text"
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddList()}
+
                   placeholder="Enter list name"
                   className="flex-1"
                   autoFocus
