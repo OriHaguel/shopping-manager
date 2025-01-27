@@ -66,3 +66,13 @@ export function removeItem(categoryId: string, itemId: string) {
     return storageService.put(KEY, category);
 }
 // saveItem('fLsri', { name: 'Milk', favorite: true, checked: false, amount: 1, _id: '' })
+
+export const limitLetters = (text: string, letterLimit: number): string => {
+    return text.length > letterLimit ? text.slice(0, letterLimit) + '...' : text;
+};
+
+const textElement = document.getElementById('limited-text');
+if (textElement) {
+    textElement.innerText = limitLetters(textElement.innerText, 50); // Adjust the letter limit as needed
+}
+

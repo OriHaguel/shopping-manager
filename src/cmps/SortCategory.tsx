@@ -7,6 +7,7 @@ import {
     useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { limitLetters } from '@/services/category.service';
 
 
 interface SortableCategoryProps {
@@ -70,7 +71,7 @@ export const SortableCategory: React.FC<SortableCategoryProps> = ({
                         ) : (
                             <ChevronDown size={24} className="text-gray-400" />
                         )}
-                        <h2 className="text-2xl font-bold text-gray-800">{category.name}</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 ">{limitLetters(category.name, 12)}</h2>
                         <span className="text-gray-400 text-sm">
                             ({category.items.length} items)
                         </span>
