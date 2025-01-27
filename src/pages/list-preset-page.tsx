@@ -29,8 +29,11 @@ const ListPresetPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [editingListId, setEditingListId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   function handleCardClick(ev: React.MouseEvent, id: string) {
+    if (editingListId) return; // Prevent navigation while editing
     ev.stopPropagation()
     setSelectedCard(id)
     navigate(`/list/${id}`)
@@ -43,8 +46,24 @@ const ListPresetPage = () => {
       removeList(list._id)
       setLists(newList);
     }
-
   }
+
+  const handleStartEditing = (ev: React.MouseEvent, list: List) => {
+    ev.stopPropagation();
+    setEditingListId(list._id);
+    setEditingName(list.name);
+  };
+
+  const handleSaveEdit = (list: List) => {
+    if (editingName.trim() && editingName !== list.name) {
+      const updatedList = { ...list, name: editingName.trim() };
+      const newLists = lists.map(l => l._id === list._id ? updatedList : l);
+      saveList(updatedList);
+      setLists(newLists);
+    }
+    setEditingListId(null);
+    setEditingName('');
+  };
 
   const handleAddList = async () => {
     if (newListName.trim()) {
@@ -112,7 +131,6 @@ const ListPresetPage = () => {
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddList()}
-
                   placeholder="Enter list name"
                   className="flex-1"
                   autoFocus
@@ -154,8 +172,7 @@ const ListPresetPage = () => {
           {filteredLists.map((list, index) => (
             <Card
               key={list._id}
-              className={`group hover:shadow-lg transition-all duration-300 hover:border-blue-200 cursor-pointer transform hover:-translate-y-1 ${selectedCard === list._id ? 'ring-2 ring-blue-400' : ''
-                }`}
+              className={`group hover:shadow-lg transition-all duration-300 hover:border-blue-200 cursor-pointer transform hover:-translate-y-1 ${selectedCard === list._id ? 'ring-2 ring-blue-400' : ''}`}
               onClick={(event) => handleCardClick(event, list._id)}
               style={{
                 animation: `fadeSlideIn 0.5s ease-out ${index * 0.1}s both`
@@ -164,19 +181,37 @@ const ListPresetPage = () => {
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
-                    {/* <div className={`w-3 h-3 rounded-full ${list.color}`} /> */}
-                    <CardTitle className="text-xl font-semibold group-hover:text-blue-600 transition-colors">
-                      {list.name}
-                    </CardTitle>
+                    {editingListId === list._id ? (
+                      <Input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === 'Enter') handleSaveEdit(list);
+                          if (e.key === 'Escape') {
+                            setEditingListId(null);
+                            setEditingName('');
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        autoFocus
+                        className="max-w-[200px]"
+                      />
+                    ) : (
+                      <CardTitle className="text-xl font-semibold group-hover:text-blue-600 transition-colors">
+                        {list.name}
+                      </CardTitle>
+                    )}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger className="group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded-full">
                       <MoreVertical className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent onClick={(event) => event.stopPropagation()}>
-                      <DropdownMenuItem className="group/item">
+                      <DropdownMenuItem className="group/item" onClick={(event) => handleStartEditing(event, list)}>
                         <Layout className="mr-2 h-4 w-4 group-hover/item:text-blue-500 transition-colors" />
-                        <span className="group-hover/item:text-blue-500 transition-colors">View Details</span>
+                        <span className="group-hover/item:text-blue-500 transition-colors">Edit Name</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem className="group/item">
                         <X className="mr-2 h-4 w-4 group-hover/item:text-red-500 transition-colors" />
@@ -190,14 +225,12 @@ const ListPresetPage = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">Categories</p>
-                    {/* <span className="text-sm font-medium">{list.categories.length}</span> */}
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">Items</p>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-3">
-                    <div
-                    />
+                    <div />
                   </div>
                 </div>
               </CardContent>
