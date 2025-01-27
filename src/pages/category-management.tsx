@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { PlusCircle, FolderPlus, Star, CheckSquare, Search, X } from 'lucide-react';
 import { Category, Items } from '../dtos/category';
 import { useParams } from 'react-router-dom';
-import { addCategories, getCategories, removeCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
+import { addCategories, confirmDeleteCategory, getCategories, removeCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
 import {
   DndContext,
   DragOverlay,
@@ -22,8 +22,6 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableItem } from '@/cmps/SortItem';
 import { SortableCategory } from '@/cmps/SortCategory';
-import Swal from 'sweetalert2';
-
 interface OpenCategories {
   [key: number]: boolean;
 }
@@ -47,7 +45,6 @@ export const CategoryManagementPage: React.FC = () => {
 
     setCategories(getCategories(id!))
   }, [activeId, id]);
-
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -121,25 +118,6 @@ export const CategoryManagementPage: React.FC = () => {
 
     setActiveId(null);
   };
-
-  function confirmDeleteCategory(nameToDelete: string) {
-    return Swal.fire({
-      title: `Are you sure you want to delete ${nameToDelete}?`,
-      text: 'You won\'t be able to revert this!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
-        return true
-      } else {
-        return false
-      }
-    });
-  }
 
   const filterItems = (items: Items[]): Items[] => {
     return items.filter(item => {

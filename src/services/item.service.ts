@@ -1,6 +1,5 @@
-import { Items, Category } from "@/dtos/category";
 import { storageService } from "./async-storage.service"
-import { List, NoiDList } from "@/dtos/list";
+import { List } from "@/dtos/list";
 
 
 

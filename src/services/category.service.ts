@@ -2,6 +2,7 @@ const KEY = 'categories'
 
 import { Category, Items } from "@/dtos/category"
 import { storageService } from "./async-storage.service"
+import Swal from "sweetalert2"
 
 
 export function getCategories(id: string): Category[] {
@@ -76,3 +77,21 @@ if (textElement) {
     textElement.innerText = limitLetters(textElement.innerText, 50); // Adjust the letter limit as needed
 }
 
+export function confirmDeleteCategory(nameToDelete: string) {
+    return Swal.fire({
+        title: `Are you sure you want to delete ${nameToDelete}?`,
+        text: 'You won\'t be able to revert this!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
+            return true
+        } else {
+            return false
+        }
+    });
+}

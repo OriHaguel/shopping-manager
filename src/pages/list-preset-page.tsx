@@ -19,6 +19,7 @@ import { List } from '@/dtos/list';
 import { getLists, removeList, saveList } from '@/services/item.service';
 import { useNavigate } from 'react-router-dom';
 import { getLoggedinUser } from '@/services/user.service';
+import { confirmDeleteCategory } from '@/services/category.service';
 
 const ListPresetPage = () => {
   const navigate = useNavigate()
@@ -29,10 +30,14 @@ const ListPresetPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
-  function handleCardClick(ev: any, id: string) {
-    ev.stopPropagation()
-    setSelectedCard(id)
-    navigate(`/list/${id}`)
+  async function handleCardClick(ev: React.MouseEvent, list: List) {
+    const toDelete = await confirmDeleteCategory(list.name)
+    if (toDelete) {
+      ev.stopPropagation()
+      setSelectedCard(list._id)
+      navigate(`/list/${list._id}`)
+    }
+
   }
 
   function deleteList(id: string) {
@@ -151,7 +156,7 @@ const ListPresetPage = () => {
               key={list._id}
               className={`group hover:shadow-lg transition-all duration-300 hover:border-blue-200 cursor-pointer transform hover:-translate-y-1 ${selectedCard === list._id ? 'ring-2 ring-blue-400' : ''
                 }`}
-              onClick={(event) => handleCardClick(event, list._id)}
+              onClick={(event) => handleCardClick(event, list)}
               style={{
                 animation: `fadeSlideIn 0.5s ease-out ${index * 0.1}s both`
               }}
