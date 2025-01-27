@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Plus, MoreVertical, Layout, X, Search, Loader2 } from 'lucide-react';
 import {
   Card,
@@ -31,6 +31,14 @@ const ListPresetPage = () => {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 200);
+
+  }, [editingListId]);
 
   function handleCardClick(ev: React.MouseEvent, id: string) {
     if (editingListId) return; // Prevent navigation while editing
@@ -178,11 +186,12 @@ const ListPresetPage = () => {
                 animation: `fadeSlideIn 0.5s ease-out ${index * 0.1}s both`
               }}
             >
-              <CardHeader>
+              <CardHeader >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
                     {editingListId === list._id ? (
                       <Input
+                        ref={inputRef}
                         type="text"
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
@@ -195,6 +204,9 @@ const ListPresetPage = () => {
                           }
                         }}
                         onClick={(e) => e.stopPropagation()}
+                        onBlur={() => {
+                          handleSaveEdit(list); // Trigger save when clicking out
+                        }}
                         autoFocus
                         className="max-w-[200px]"
                       />

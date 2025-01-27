@@ -4,6 +4,7 @@ import ListPresetPage from './pages/list-preset-page'
 import AuthPage from './pages/fitness-auth-page'
 import { CategoryManagementPage } from './pages/category-management'
 // import { AppHeader } from './cmps/AppHeader'
+
 export function RootCmp() {
     return (
         <div className="main-container">
