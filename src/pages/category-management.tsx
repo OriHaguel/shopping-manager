@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PlusCircle, FolderPlus, Star, CheckSquare, Search, X } from 'lucide-react';
 import { Category, Items } from '../dtos/category';
 import { useParams } from 'react-router-dom';
-import { getCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
+import { addCategories, getCategories, removeCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
 import {
   DndContext,
   DragOverlay,
@@ -12,6 +12,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -42,6 +43,12 @@ export const CategoryManagementPage: React.FC = () => {
   const [showChecked, setShowChecked] = useState<boolean>(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  useEffect(() => {
+
+    setCategories(getCategories(id!))
+  }, [activeId, id]);
+
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -49,8 +56,8 @@ export const CategoryManagementPage: React.FC = () => {
     })
   );
 
-  const handleDragStart = (event: any) => {
-    setActiveId(event.active.id);
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id.toString());
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -66,6 +73,9 @@ export const CategoryManagementPage: React.FC = () => {
         const newIndex = categories.findIndex(cat => `category-${cat._id}` === over.id);
 
         const reorderedCategories = arrayMove(categories, oldIndex, newIndex);
+        // addCategories(reorderedCategories)
+        removeCategories()
+        reorderedCategories.map((cat) => addCategories(cat))
         setCategories(reorderedCategories);
         // You might want to save the new order to your backend here
       } else {
@@ -112,9 +122,9 @@ export const CategoryManagementPage: React.FC = () => {
     setActiveId(null);
   };
 
-  function confirmDeleteCategory() {
+  function confirmDeleteCategory(nameToDelete: string) {
     return Swal.fire({
-      title: 'Are you sure?',
+      title: `Are you sure you want to delete ${nameToDelete}?`,
       text: 'You won\'t be able to revert this!',
       icon: 'warning',
       showCancelButton: true,
@@ -188,10 +198,10 @@ export const CategoryManagementPage: React.FC = () => {
     }));
   };
 
-  const handleDeleteCategory = async (indexToDelete: number, categoryId: string): Promise<void> => {
-    const toDelete = await confirmDeleteCategory()
+  const handleDeleteCategory = async (indexToDelete: number, category: Category): Promise<void> => {
+    const toDelete = await confirmDeleteCategory(category.name)
     if (toDelete) {
-      removeCategory(categoryId)
+      removeCategory(category._id)
       setCategories(categories.filter((_, index) => index !== indexToDelete));
       const updatedOpenCategories = { ...openCategories };
       delete updatedOpenCategories[indexToDelete];
@@ -200,7 +210,7 @@ export const CategoryManagementPage: React.FC = () => {
   };
 
   const handleDeleteItem = async (category: Category, item: Items): Promise<void> => {
-    const toDelete = await confirmDeleteCategory()
+    const toDelete = await confirmDeleteCategory(item.name)
     if (toDelete) {
       const updatedCategories = [...categories];
       const categoryAfterItemRemoved = removeItem(category._id, item._id)
@@ -369,7 +379,7 @@ export const CategoryManagementPage: React.FC = () => {
                     category={category}
                     isOpen={openCategories[categoryIndex]}
                     onToggle={() => toggleCategory(categoryIndex)}
-                    onDeleteCategory={() => handleDeleteCategory(categoryIndex, category._id)}
+                    onDeleteCategory={() => handleDeleteCategory(categoryIndex, category)}
                     onRemoveChecked={() => handleRemoveChecked(categoryIndex, category)}
                   >
                     <div className="p-6 border-t border-gray-100">

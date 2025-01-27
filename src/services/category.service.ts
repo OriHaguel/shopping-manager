@@ -12,6 +12,9 @@ export function getCategories(id: string): Category[] {
 export function removeCategory(categoryId: string): void {
     return storageService.remove(KEY, categoryId)
 }
+export function removeCategories(): void {
+    localStorage.removeItem(KEY)
+}
 
 
 
@@ -21,6 +24,9 @@ export function saveCategory(category: Category) {
     } else {
         return storageService.post(KEY, category)
     }
+}
+export function addCategories(categories: Category) {
+    return storageService.post(KEY, categories)
 }
 
 

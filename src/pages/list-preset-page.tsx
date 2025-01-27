@@ -20,7 +20,6 @@ import { getLists, removeList, saveList } from '@/services/item.service';
 import { useNavigate } from 'react-router-dom';
 import { getLoggedinUser } from '@/services/user.service';
 
-
 const ListPresetPage = () => {
   const navigate = useNavigate()
   const [lists, setLists] = useState<List[]>(getLists());
@@ -45,7 +44,6 @@ const ListPresetPage = () => {
   const handleAddList = async () => {
     if (newListName.trim()) {
       setIsLoading(true);
-      // Simulate API call
 
       const newList: List = {
         name: newListName,

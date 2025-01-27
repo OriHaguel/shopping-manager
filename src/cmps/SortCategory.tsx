@@ -49,7 +49,7 @@ export const SortableCategory: React.FC<SortableCategoryProps> = ({
             style={style}
             className="bg-white rounded-xl shadow-lg border border-gray-100"
         >
-            <div className="p-6 flex justify-between items-center">
+            <div className="p-6 flex justify-between items-center truncate overflow-hidden whitespace-nowrap">
                 {/* Drag handle */}
                 <div
                     className="mr-2 cursor-move text-gray-400 hover:text-gray-600"
