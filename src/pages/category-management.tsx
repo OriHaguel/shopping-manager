@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PlusCircle, FolderPlus, Star, CheckSquare, Search, X } from 'lucide-react';
 import { Category, Items } from '../dtos/category';
 import { useParams } from 'react-router-dom';
@@ -31,6 +31,7 @@ interface NewItemInputs {
 
 export const CategoryManagementPage: React.FC = () => {
   const { id } = useParams()
+  const elCategoryInput = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<Category[]>(getCategories(id!));
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>('');
@@ -45,6 +46,15 @@ export const CategoryManagementPage: React.FC = () => {
 
     setCategories(getCategories(id!))
   }, [activeId, id]);
+
+  useEffect(() => {
+
+    elCategoryInput.current?.focus();
+
+
+  }, [showCategoryInput]);
+
+
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -297,6 +307,7 @@ export const CategoryManagementPage: React.FC = () => {
           ) : (
             <div className="flex flex-wrap gap-3 justify-center items-center w-full max-w-lg mx-auto">
               <input
+                ref={elCategoryInput}
                 type="text"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
