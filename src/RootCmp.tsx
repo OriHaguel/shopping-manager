@@ -1,11 +1,26 @@
-import { Routes, Route } from 'react-router'
+import { Routes, Route, useNavigate, useLocation } from 'react-router'
 import Homepage from './pages/Home'
 import ListPresetPage from './pages/list-preset-page'
 import AuthPage from './pages/fitness-auth-page'
 import { CategoryManagementPage } from './pages/category-management'
+import { useEffect, useState } from 'react'
+import { putLoggedInUser } from './services/user.service'
+import { SavedUserDto } from './dtos/user'
 // import { AppHeader } from './cmps/AppHeader'
 
+
 export function RootCmp() {
+    const location = useLocation()
+    const isAuthOrHomePage = location.pathname === '/' || location.pathname === '/auth';
+    const [user] = useState<SavedUserDto | void>(putLoggedInUser())
+    const navigate = useNavigate()
+    useEffect(() => {
+        if (user && isAuthOrHomePage) {
+            navigate('/list')
+        }
+        console.log('user', user)
+    },);
+
     return (
         <div className="main-container">
             {/* <AppHeader /> */}
