@@ -43,6 +43,27 @@ export const CategoryManagementPage: React.FC = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
+    const handleBack = () => {
+      setOpenCategories({})
+      console.log("Back button pressed!");
+      // Execute any function here instead of navigating back
+    };
+
+    // Prevent actual navigation
+    const preventBack = () => {
+      history.pushState(null, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", handleBack);
+    if (Object.keys(openCategories).length > 0) {
+      preventBack();
+    }
+
+
+    return () => window.removeEventListener("popstate", handleBack);
+  }, [openCategories]);
+
+  useEffect(() => {
     setCategories(getCategories(id!))
   }, [activeId, id]);
 
