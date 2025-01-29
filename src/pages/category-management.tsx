@@ -43,18 +43,12 @@ export const CategoryManagementPage: React.FC = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
-
     setCategories(getCategories(id!))
   }, [activeId, id]);
 
   useEffect(() => {
-
     elCategoryInput.current?.focus();
-
-
   }, [showCategoryInput]);
-
-
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -266,24 +260,34 @@ export const CategoryManagementPage: React.FC = () => {
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 shadow-sm"
               />
             </div>
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               <button
                 onClick={() => setShowFavorites(!showFavorites)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${showFavorites ? 'bg-yellow-50 border-yellow-200 text-yellow-700' : 'border-gray-200 text-gray-600'
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${showFavorites
+                  ? 'bg-yellow-50 border-yellow-200 text-yellow-700'
+                  : 'border-gray-200 text-gray-600'
                   }`}
               >
-                <Star size={18} className={showFavorites ? 'fill-yellow-500 text-yellow-500' : ''} />
+                <Star
+                  size={18}
+                  className={showFavorites ? 'fill-yellow-500 text-yellow-500' : ''}
+                />
                 Favorites
               </button>
               <button
                 onClick={() => setShowChecked(!showChecked)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${showChecked ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 text-gray-600'
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${showChecked
+                  ? 'bg-blue-50 border-blue-200 text-blue-700'
+                  : 'border-gray-200 text-gray-600'
                   }`}
               >
-                <CheckSquare size={18} className={showChecked ? 'text-blue-500' : ''} />
+                <CheckSquare
+                  size={18}
+                  className={showChecked ? 'text-blue-500' : ''}
+                />
                 Checked
               </button>
-              {(searchTerm) && (
+              {searchTerm && (
                 <button
                   onClick={handleClearFilters}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors duration-200"

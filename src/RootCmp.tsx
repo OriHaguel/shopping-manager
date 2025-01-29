@@ -6,8 +6,6 @@ import { CategoryManagementPage } from './pages/category-management'
 import { useEffect, useState } from 'react'
 import { putLoggedInUser } from './services/user.service'
 import { SavedUserDto } from './dtos/user'
-// import { AppHeader } from './cmps/AppHeader'
-
 
 export function RootCmp() {
     const location = useLocation()
@@ -18,12 +16,10 @@ export function RootCmp() {
         if (user && isAuthOrHomePage) {
             navigate('/list')
         }
-        console.log('user', user)
     },);
 
     return (
         <div className="main-container">
-            {/* <AppHeader /> */}
             <main>
                 <Routes>
                     <Route path='/' element={<Homepage />} />

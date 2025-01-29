@@ -51,7 +51,4 @@ export function putLoggedInUser(): SavedUserDto | void {
     }
 
 }
-// export function putLoggedInUser() {
-//     const user = JSON.parse(localStorage.getItem(KEEPING_LOGGEDIN_USER)!)
-//     return _saveLoggedinUser(user)
-// }
+
