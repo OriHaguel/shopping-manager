@@ -72,7 +72,7 @@ export const SortableCategory: React.FC<SortableCategoryProps> = ({
                             <ChevronDown size={24} className="text-gray-400" />
                         )}
                         <h2 className="text-2xl font-bold text-gray-800 ">{limitLetters(category.name, 12)}</h2>
-                        <span className={`text-gray-400 text-sm text-blue-500 ${category.items.length > 0 ? 'text-blue-400' : ''}`}>
+                        <span className={`text-gray-400 text-sm ${category.items.length > 0 ? 'text-red-500' : ''}`}>
                             ({category.items.length} items)
                         </span>
                     </div>

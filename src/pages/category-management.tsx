@@ -64,7 +64,8 @@ export const CategoryManagementPage: React.FC = () => {
   }, [openCategories]);
 
   useEffect(() => {
-    setCategories(getCategories(id!))
+    if (!id) return
+    setCategories(getCategories(id))
   }, [activeId, id]);
 
   useEffect(() => {
