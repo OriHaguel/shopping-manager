@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { PlusCircle, FolderPlus, Star, CheckSquare, Search, X } from 'lucide-react';
 import { Category, Items } from '../dtos/category';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { addCategories, confirmDeleteCategory, getCategories, removeCategories, removeCategory, removeItem, saveCategory, saveItem } from '@/services/category.service';
 import {
   DndContext,
@@ -40,16 +40,13 @@ export const CategoryManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFavorites, setShowFavorites] = useState<boolean>(false);
   const [showChecked, setShowChecked] = useState<boolean>(false);
+  console.log("🚀 ~ showChecked:", showChecked)
   const [activeId, setActiveId] = useState<string | null>(null);
-
   useEffect(() => {
+
     const handleBack = () => {
       setOpenCategories({})
-      console.log("Back button pressed!");
-      // Execute any function here instead of navigating back
     };
-
-    // Prevent actual navigation
     const preventBack = () => {
       history.pushState(null, "", window.location.href);
     };
@@ -58,7 +55,6 @@ export const CategoryManagementPage: React.FC = () => {
     if (Object.keys(openCategories).length > 0) {
       preventBack();
     }
-
 
     return () => window.removeEventListener("popstate", handleBack);
   }, [openCategories]);
@@ -392,6 +388,7 @@ export const CategoryManagementPage: React.FC = () => {
                     key={`category-${category._id}`}
                     id={`category-${category._id}`}
                     category={category}
+                    checked={showChecked}
                     isOpen={openCategories[categoryIndex]}
                     onToggle={() => toggleCategory(categoryIndex)}
                     onDeleteCategory={() => handleDeleteCategory(categoryIndex, category)}
